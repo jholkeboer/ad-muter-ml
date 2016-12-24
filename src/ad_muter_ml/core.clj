@@ -9,7 +9,11 @@
     [clojure.data.json :as json]))
 
 (defroutes app-routes
+
+  ;; Lighteight page for testing (small file size)
   (GET "/test_page" [] "Testpage.")
+
+  ;; Receive an image from the chrome extension
   (POST "/receive_image" request
     (do
       (let [raw-body (json/read-str (ring.util.request/body-string request))
@@ -21,6 +25,7 @@
         (spit path image-data)
         (println (str "Saved " path))
         "Saved image.")))
+
   (route/not-found "404 Route not found."))
 
 (def app (ring.middleware.params/wrap-params app-routes))
