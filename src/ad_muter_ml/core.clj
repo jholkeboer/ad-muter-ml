@@ -5,17 +5,22 @@
     [ring.adapter.jetty :as jetty]
     [ring.middleware.params :only [wrap-params]]
     [compojure.core :refer :all]
-    [compojure.route :as route]))
+    [compojure.route :as route]
+    [clojure.data.json :as json]))
 
 (defroutes app-routes
   (GET "/test_page" [] "Testpage.")
-  ; (POST "/receive_image" [time] (do (println (str "Got time " time))) "Got request")
   (POST "/receive_image" request
     (do
-      (println (str "Got params? " (:body request)))
-      (let [body (ring.util.request/body-string request)]
-        (println body))
-      "Got request"))
+      (let [raw-body (json/read-str (ring.util.request/body-string request))
+            image-time (get raw-body "time")
+            image-data (get raw-body "image")
+            path  (str "images/" image-time ".png")]
+        (println (get raw-body "time"))
+        (println (apply str (take 20 image-data)))
+        (spit path image-data)
+        (println (str "Saved " path))
+        "Saved image.")))
   (route/not-found "404 Route not found."))
 
 (def app (ring.middleware.params/wrap-params app-routes))
