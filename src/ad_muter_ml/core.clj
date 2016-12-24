@@ -15,16 +15,15 @@
 
   ;; Receive an image from the chrome extension
   (POST "/receive_image" request
-    (do
-      (let [raw-body (json/read-str (ring.util.request/body-string request))
-            image-time (get raw-body "time")
-            image-data (get raw-body "image")
-            path  (str "images/" image-time ".png")]
-        (println (get raw-body "time"))
-        (println (apply str (take 20 image-data)))
-        (spit path image-data)
-        (println (str "Saved " path))
-        "Saved image.")))
+    (let [raw-body (json/read-str (ring.util.request/body-string request))
+          image-time (get raw-body "time")
+          image-data (get raw-body "image")
+          path  (str "images/" image-time ".png")]
+      (println (get raw-body "time"))
+      (println (apply str (take 20 image-data)))
+      (spit path image-data)
+      (println (str "Saved " path))
+      "Saved image."))
 
   (route/not-found "404 Route not found."))
 
