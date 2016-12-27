@@ -30,7 +30,6 @@
     (let [raw-body (json/read-str (ring.util.request/body-string request))
           time (get raw-body "time")
           image-data (get raw-body "image")]
-      (println (apply str (take 20 image-data)))
       (write-image-to-file image-data time)
       "Saved image."))
 
@@ -39,7 +38,7 @@
 (def app (ring.middleware.params/wrap-params app-routes))
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Start the server."
   [& args]
   (let [port (Integer. (get (System/getenv) "AD_MUTER_PORT" "5000"))]
     (jetty/run-jetty
