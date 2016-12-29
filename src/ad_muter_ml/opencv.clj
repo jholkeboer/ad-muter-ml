@@ -46,4 +46,21 @@
 ; Imgproc/TM_CCORR           Imgproc/TM_CCORR_NORMED
 ; Imgproc/TM_SQDIFF          Imgproc/TM_SQDIFF_NORMED
 
-#_(Imgproc/matchTemplate ad cnn result Imgproc/TM_SQDIFF)
+#_(Imgproc/matchTemplate ad cnn result Imgproc/TM_SQDIFF_NORMED)
+
+; see http://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/template_matching/template_matching.html
+#_(Core/normalize result result 0 1 Core/NORM_MINMAX -1 (Mat.))
+
+
+
+ ; {:name minMaxLoc,
+ ;  :return-type org.opencv.core.Core$MinMaxLocResult,
+ ;  :declaring-class org.opencv.core.Core,
+ ;  :parameter-types [org.opencv.core.Mat org.opencv.core.Mat],
+ ;  :exception-types [],
+ ;  :flags #{:public :static}}
+
+(defn get-match-loc)
+
+#_(def min-max-result (Core/minMaxLoc result))
+(def match-loc (Point.))
