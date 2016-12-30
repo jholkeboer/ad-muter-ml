@@ -9,6 +9,7 @@
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.codec "0.1.0"]
                  [ring "1.4.0"]
+                 [ring/ring-json "0.4.0"]
                  [compojure "1.5.0"]
                  [hiccup "1.0.5"]
                  [net.mikera/imagez "0.12.0"]

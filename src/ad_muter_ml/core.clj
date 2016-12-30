@@ -4,7 +4,9 @@
   (:require
     [ring.adapter.jetty :as jetty]
     [ring.middleware.params :only [wrap-params]]
+    [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
     [compojure.core :refer :all]
+    [compojure.handler :as handler]
     [compojure.route :as route]
     [clojure.data.json :as json]
     [clojure.java.io :as io]
@@ -32,12 +34,17 @@
           time (get raw-body "time")
           image-data (get raw-body "image")]
       (write-image-to-file image-data time)
-      (println (get-match-score time))
-      "Saved image."))
+      (let [decision (get-match-score time)]
+        (println decision)
+        {:status 200
+         :body {:decision decision}})))
 
   (route/not-found "404 Route not found."))
 
-(def app (ring.middleware.params/wrap-params app-routes))
+(def app
+  (-> app-routes
+      (wrap-json-response)
+      (ring.middleware.params/wrap-params)))
 
 (defn -main
   "Start the server."
