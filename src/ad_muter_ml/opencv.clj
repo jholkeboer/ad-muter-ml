@@ -45,6 +45,13 @@
 ; Imgproc/TM_CCOEFF          Imgproc/TM_CCOEFF_NORMED
 ; Imgproc/TM_CCORR           Imgproc/TM_CCORR_NORMED
 ; Imgproc/TM_SQDIFF          Imgproc/TM_SQDIFF_NORMED
+(def match-methods #{Imgproc/TM_CCOEFF          ; = 4
+                     Imgproc/TM_CCORR           ; = 2
+                     Imgproc/TM_SQDIFF          ; = 0
+                     Imgproc/TM_CCOEFF_NORMED   ; = 5
+                     Imgproc/TM_CCORR_NORMED    ; = 3
+                     Imgproc/TM_SQDIFF_NORMED}) ; = 1
+
 
 #_(Imgproc/matchTemplate ad cnn result Imgproc/TM_SQDIFF_NORMED)
 
@@ -60,7 +67,40 @@
  ;  :exception-types [],
  ;  :flags #{:public :static}}
 
-(defn get-match-loc)
 
-#_(def min-max-result (Core/minMaxLoc result))
-(def match-loc (Point.))
+(defn match-with-method
+  [img templ result method]
+  (Imgproc/matchTemplate img templ result method))
+  ; (Core/normalize result result 0 1 Core/NORM_MINMAX -1))
+
+(def ad-result (Mat.))
+(match-with-method ad cnn ad-result Imgproc/TM_CCOEFF_NORMED)
+
+(def cnn-result (Mat.))
+(match-with-method not-ad cnn cnn-result Imgproc/TM_CCOEFF_NORMED)
+
+(defn get-match-loc
+  [result method]
+  (let [min-max-result (Core/minMaxLoc result)]
+    (if (contains? #{Imgproc/TM_SQDIFF Imgproc/TM_SQDIFF_NORMED} method)
+      (.minLoc min-max-result)
+      (.maxLoc min-max-result))))
+
+(def ad-min-max (Core/minMaxLoc ad-result))
+(def cnn-min-max (Core/minMaxLoc cnn-result))
+
+(def min-max-result (Core/minMaxLoc result))
+(get-match-loc ad-result Imgproc/TM_CCOEFF_NORMED)
+(get-match-loc cnn-result Imgproc/TM_CCOEFF_NORMED)
+
+(doseq [m methods]
+  (def ad-result (Mat.))
+  (match-with-method ad cnn ad-result m)
+  (println "Method" m)
+  (println "Ad result")
+  (println (get-match-loc ad-result m))
+
+  (def cnn-result (Mat.))
+  (match-with-method not-ad cnn cnn-result m)
+  (println "CNN result")
+  (println (get-match-loc cnn-result m)))
