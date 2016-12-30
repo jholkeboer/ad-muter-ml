@@ -8,7 +8,8 @@
     [compojure.route :as route]
     [clojure.data.json :as json]
     [clojure.java.io :as io]
-    [clojure.data.codec.base64 :as b64-codec]))
+    [clojure.data.codec.base64 :as b64-codec]
+    [ad-muter-ml.opencv :refer [get-match-score]]))
 
 (defn write-image-to-file
   "Takes base64 string"
@@ -31,6 +32,7 @@
           time (get raw-body "time")
           image-data (get raw-body "image")]
       (write-image-to-file image-data time)
+      (println (get-match-score time))
       "Saved image."))
 
   (route/not-found "404 Route not found."))
