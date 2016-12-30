@@ -1,9 +1,9 @@
-Ad Muter
+## Ad Muter
 
 ## Description
 
 I like to watch cable news, but I hate watching ads.  This app uses OpenCV to detect the
-presence of a logo on a screencap of the browser window where you're watching.  
+presence of a logo on a screencap of the browser window where you're watching.
 
 It works in conjunction with this companion Chrome extension I wrote to take screenshots and mute the tab:
 https://github.com/jholkeboer/ad-muter-chrome-ext
