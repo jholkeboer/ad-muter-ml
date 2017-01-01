@@ -20,15 +20,7 @@
      (.getPath (clojure.java.io/resource filename))))
 
 (def cnn (load-image "cnn-logo.png"))
-
-(def last-three-scores (atom '()))
-
-(defn update-scores
-  [scores new]
-  (take 3
-    (conj scores new)))
-
-(swap! last-three-scores update-scores 2)
+(def threshold 0.95)
 
 (defn match-with-method
   [img templ result method]
@@ -38,107 +30,15 @@
   [result method]
   (let [min-max-result (Core/minMaxLoc result)]
     (if (contains? #{Imgproc/TM_SQDIFF Imgproc/TM_SQDIFF_NORMED} method)
-      (.minLoc min-max-result)
-      (.maxLoc min-max-result))))
+      (.minVal min-max-result)
+      (.maxVal min-max-result))))
 
 (defn get-match-score
   [time]
   (let [result (Mat.)
         img-file (load-image (str time ".png"))
-        method Imgproc/TM_CCOEFF]
+        method Imgproc/TM_CCORR_NORMED]
     (match-with-method img-file cnn result method)
     (let [match-loc (get-match-loc result method)]
       (println match-loc)
-      (swap! last-three-scores update-scores (.x match-loc))
-      (println @last-three-scores)
-      (apply = @last-three-scores))))
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Dev notes below
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; Method 0
-; Ad result
-; #object[org.opencv.core.Point 0x1c36f0ee {955.0, 255.0}]
-; CNN result
-; #object[org.opencv.core.Point 0x384f1b9c {924.0, 513.0}]
-; Method 1
-; Ad result
-; #object[org.opencv.core.Point 0x3791a07 {783.0, 300.0}]
-; CNN result
-; #object[org.opencv.core.Point 0x56e8f7c2 {924.0, 513.0}]
-; Method 4
-; Ad result
-; #object[org.opencv.core.Point 0x7df2dc71 {1.0, 268.0}]
-; CNN result
-; #object[org.opencv.core.Point 0x3d21bba8 {924.0, 513.0}]
-; Method 3
-; Ad result
-; #object[org.opencv.core.Point 0x76433729 {734.0, 577.0}]
-; CNN result
-; #object[org.opencv.core.Point 0x678498c4 {924.0, 513.0}]
-; Method 2
-; Ad result
-; #object[org.opencv.core.Point 0xc7ed111 {0.0, 376.0}]
-; CNN result
-; #object[org.opencv.core.Point 0x3cb2c7cd {924.0, 513.0}]
-; Method 5
-; Ad result
-; #object[org.opencv.core.Point 0x53a7550d {787.0, 470.0}]
-; CNN result
-; #object[org.opencv.core.Point 0x10a6a505 {924.0, 513.0}]
-
-
-#_(def not-ad (load-image "1482793956795.png"))
-#_(def ad (load-image "1482794943137.png"))
-#_(def result (Mat.))
-
-#_(def result-cols
-    [img templ]
-    (+ 1
-      (- (.cols img) (.cols templ))))
-
-#_(def result-rows
-    [img templ]
-    (+ 1
-      (- (.rows img) (.rows templ))))
-
-; Available match methods:
-; Imgproc/TM_CCOEFF          Imgproc/TM_CCOEFF_NORMED
-; Imgproc/TM_CCORR           Imgproc/TM_CCORR_NORMED
-; Imgproc/TM_SQDIFF          Imgproc/TM_SQDIFF_NORMED
-#_(def match-methods #{Imgproc/TM_CCOEFF          ; = 4
-                       Imgproc/TM_CCORR           ; = 2
-                       Imgproc/TM_SQDIFF          ; = 0
-                       Imgproc/TM_CCOEFF_NORMED   ; = 5
-                       Imgproc/TM_CCORR_NORMED    ; = 3
-                       Imgproc/TM_SQDIFF_NORMED}) ; = 1
-
-#_(doseq [m methods]
-    (def ad-result (Mat.))
-    (match-with-method ad cnn ad-result m)
-    (println "Method" m)
-    (println "Ad result")
-    (println (get-match-loc ad-result m))
-
-    (def cnn-result (Mat.))
-    (match-with-method not-ad cnn cnn-result m)
-    (println "CNN result")
-    (println (get-match-loc cnn-result m)))
-
-; (def ad-result (Mat.))
-; (match-with-method ad cnn ad-result Imgproc/TM_CCOEFF_NORMED)
-;
-; (def cnn-result (Mat.))
-; (match-with-method not-ad cnn cnn-result Imgproc/TM_CCOEFF_NORMED)
-
-; (def ad-min-max (Core/minMaxLoc ad-result))
-; (def cnn-min-max (Core/minMaxLoc cnn-result))
-
-; (def min-max-result (Core/minMaxLoc result))
-; (get-match-loc ad-result Imgproc/TM_CCOEFF_NORMED)
-; (get-match-loc cnn-result Imgproc/TM_CCOEFF_NORMED)
+      (> match-loc threshold))))

@@ -13,6 +13,10 @@
     [clojure.data.codec.base64 :as b64-codec]
     [ad-muter-ml.opencv :refer [get-match-score]]))
 
+(defn image-file-path
+  [time]
+  (str "images/" time ".png"))
+
 (defn write-image-to-file
   "Takes base64 string"
   [image-data time]
@@ -21,7 +25,7 @@
                       (second)
                       (.getBytes)
                       (b64-codec/decode))
-        path    (str "images/" time  ".png")]
+        path    (image-file-path time)]
     (io/copy decoded-data (java.io.File. path))))
 
 (defroutes app-routes
@@ -35,6 +39,7 @@
           image-data (get raw-body "image")]
       (write-image-to-file image-data time)
       (let [decision (get-match-score time)]
+        (io/delete-file (image-file-path time))
         (println decision)
         {:status 200
          :body {:decision decision}})))

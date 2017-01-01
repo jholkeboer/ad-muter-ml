@@ -23,17 +23,10 @@ The CNN logo is provided in the "/resources" folder. (TODO enable swapping logos
 You can run the app as a local web server using `lein run`.
 
 Then install the chrome extension, and click the "A" icon to turn recording on or off.
-This will save PNG screenshots of the current tab in the /images folder.
 
 ### Bugs
 
-Currently, the method for deciding whether it's a commercial is taking the three most recent
-x-coordinates of the minMaxLoc derived from the OpenCV matchTemplate result.  It works reasonably
-well but there are occasional false positives.  Currently it's using the `Imgproc/TM_CCOEFF`
-matching method, but I want to try out some other methods and optimize the decision accuracy.
-Ideally it should not be judging by repeated pixel positions, but by a confidence metric.
-TODO look into image diffing in OpenCV.
-
+Currently the logo detection does not scale well when the window is resized.
 
 ## License
 
