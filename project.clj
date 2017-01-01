@@ -11,7 +11,6 @@
                  [ring "1.4.0"]
                  [ring/ring-json "0.4.0"]
                  [compojure "1.5.0"]
-                 [hiccup "1.0.5"]
                  [net.mikera/imagez "0.12.0"]
                  [opencv/opencv "3.2.0"]
                  [opencv/opencv-native "3.2.0"]]
