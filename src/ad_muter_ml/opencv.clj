@@ -14,12 +14,33 @@
 ;; This must be run to use opencv
 (clojure.lang.RT/loadLibrary org.opencv.core.Core/NATIVE_LIBRARY_NAME)
 
+(def match-methods #{Imgproc/TM_CCOEFF          ; = 4
+                     Imgproc/TM_CCORR           ; = 2
+                     Imgproc/TM_SQDIFF          ; = 0
+                     Imgproc/TM_CCOEFF_NORMED   ; = 5
+                     Imgproc/TM_CCORR_NORMED    ; = 3
+                     Imgproc/TM_SQDIFF_NORMED}) ; = 1
+
+(def normed-match-methods #{Imgproc/TM_CCOEFF_NORMED
+                            Imgproc/TM_CCORR_NORMED
+                            Imgproc/TM_SQDIFF_NORMED})
+
+; need a map to see the names for testing since these are really just ints
+(def match-method-names
+  {Imgproc/TM_SQDIFF "TM_SQDIFF"
+   Imgproc/TM_SQDIFF_NORMED "TM_SQDIFF_NORMED"
+   Imgproc/TM_CCORR "TM_CCORR"
+   Imgproc/TM_CCORR_NORMED "TM_CCORR_NORMED"
+   Imgproc/TM_CCOEFF "TM_CCOEFF"
+   Imgproc/TM_CCOEFF_NORMED "TM_CCOEFF_NORMED"})
+
 (defn load-image
   [filename]
   (Imgcodecs/imread
      (.getPath (clojure.java.io/resource filename))))
 
 (def cnn (load-image "cnn-logo.png"))
+(def fox (load-image "fox-logo.png"))
 
 (def last-three-scores (atom '()))
 
@@ -27,8 +48,6 @@
   [scores new]
   (take 3
     (conj scores new)))
-
-(swap! last-three-scores update-scores 2)
 
 (defn match-with-method
   [img templ result method]
@@ -38,20 +57,34 @@
   [result method]
   (let [min-max-result (Core/minMaxLoc result)]
     (if (contains? #{Imgproc/TM_SQDIFF Imgproc/TM_SQDIFF_NORMED} method)
-      (.minLoc min-max-result)
-      (.maxLoc min-max-result))))
+      (.minVal min-max-result)
+      (.maxVal min-max-result))))
+
+(defn test-methods
+  "Print the maxVal and minVals for each method to evaluate "
+  [img-file]
+  (doseq [m normed-match-methods]
+    (println (get match-method-names m))
+    (let [result (Mat.)]
+      (match-with-method img-file cnn result m)
+      ; (match-with-method img-file fox result m)
+      (let [min-max-result (Core/minMaxLoc result)]
+        (if (contains? {Imgproc/TM_SQDIFF Imgproc/TM_SQDIFF_NORMED} m)
+          (println (.minVal min-max-result))
+          (println (.maxVal min-max-result)))))))
 
 (defn get-match-score
   [time]
   (let [result (Mat.)
-        img-file (load-image (str time ".png"))
-        method Imgproc/TM_CCOEFF]
-    (match-with-method img-file cnn result method)
-    (let [match-loc (get-match-loc result method)]
-      (println match-loc)
-      (swap! last-three-scores update-scores (.x match-loc))
-      (println @last-three-scores)
-      (apply = @last-three-scores))))
+        img-file (load-image (str time ".png"))]
+    (test-methods img-file)
+    true))
+    ; (match-with-method img-file cnn result method)
+    ; (let [match-loc (get-match-loc result method)]
+    ;   (println match-loc))))
+      ; (swap! last-three-scores update-scores (.x match-loc)))))
+      ; (println @last-three-scores)
+      ; (apply = @last-three-scores))))
 
 
 
@@ -107,16 +140,7 @@
     (+ 1
       (- (.rows img) (.rows templ))))
 
-; Available match methods:
-; Imgproc/TM_CCOEFF          Imgproc/TM_CCOEFF_NORMED
-; Imgproc/TM_CCORR           Imgproc/TM_CCORR_NORMED
-; Imgproc/TM_SQDIFF          Imgproc/TM_SQDIFF_NORMED
-#_(def match-methods #{Imgproc/TM_CCOEFF          ; = 4
-                       Imgproc/TM_CCORR           ; = 2
-                       Imgproc/TM_SQDIFF          ; = 0
-                       Imgproc/TM_CCOEFF_NORMED   ; = 5
-                       Imgproc/TM_CCORR_NORMED    ; = 3
-                       Imgproc/TM_SQDIFF_NORMED}) ; = 1
+
 
 #_(doseq [m methods]
     (def ad-result (Mat.))
